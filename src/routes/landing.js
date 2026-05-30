@@ -4,6 +4,7 @@ const { body } = require("express-validator");
 const rateLimit = require("express-rate-limit");
 
 const landingController = require("../controllers/landingController");
+const { protect, requireAdmin } = require("../middleware/auth");
 
 // Rate limit: max 5 contact submissions per IP per 15 minutes
 const contactLimiter = rateLimit({
@@ -38,5 +39,7 @@ const contactRules = [
 
 router.get("/media", landingController.getMedia);
 router.post("/contact", contactLimiter, contactRules, landingController.submitContact);
+router.patch("/contact/:id", protect, requireAdmin, landingController.updateContact);
+router.delete("/contact/:id", protect, requireAdmin, landingController.deleteContact);
 
 module.exports = router;

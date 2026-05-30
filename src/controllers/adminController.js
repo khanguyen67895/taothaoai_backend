@@ -89,14 +89,29 @@ exports.deleteUser = async (req, res, next) => {
 };
 
 // GET /api/admin/contacts
+// Query params:
+//   search   — tìm theo tên, sđt hoặc email (1 ô duy nhất)
+//   problem  — lọc theo vấn đề (exact)
+//   mode     — lọc theo hình thức học
+//   status   — lọc theo trạng thái (new|contacted|processing|done)
+//   isRead   — lọc đã đọc (true|false)
+//   page, limit
 exports.getContacts = async (req, res, next) => {
   try {
-    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
-    const skip = (page - 1) * limit;
+    const skip  = (page - 1) * limit;
 
     const filter = {};
-    if (req.query.mode) filter.mode = req.query.mode;
+
+    if (req.query.search) {
+      const re = new RegExp(req.query.search.trim(), "i");
+      filter.$or = [{ name: re }, { phone: re }, { email: re }];
+    }
+
+    if (req.query.problem) filter.problem   = req.query.problem;
+    if (req.query.mode)    filter.mode      = req.query.mode;
+    if (req.query.status)  filter.status    = req.query.status;
     if (req.query.isRead !== undefined) filter.isRead = req.query.isRead === "true";
 
     const [contacts, total] = await Promise.all([

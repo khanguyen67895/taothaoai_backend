@@ -72,6 +72,51 @@ exports.getMedia = (_req, res) => {
   res.json({ success: true, data: media });
 };
 
+// PATCH /api/landing/contact/:id
+// Update trạng thái (status, isRead) và phụ trách (assignedTo) — admin only
+exports.updateContact = async (req, res, next) => {
+  try {
+    const allowed = ["status", "isRead", "assignedTo"];
+    const updates = {};
+    allowed.forEach((key) => {
+      if (req.body[key] !== undefined) updates[key] = req.body[key];
+    });
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ success: false, message: "Không có trường nào để cập nhật" });
+    }
+
+    const contact = await Contact.findByIdAndUpdate(
+      req.params.id,
+      updates,
+      { new: true, runValidators: true }
+    );
+
+    if (!contact) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy liên hệ" });
+    }
+
+    res.json({ success: true, data: contact });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// DELETE /api/landing/contact/:id — admin only
+exports.deleteContact = async (req, res, next) => {
+  try {
+    const contact = await Contact.findByIdAndDelete(req.params.id);
+
+    if (!contact) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy liên hệ" });
+    }
+
+    res.json({ success: true, message: "Đã xoá liên hệ thành công" });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // POST /api/landing/contact
 // Validates and forwards CTA form data to Telegram + saves to DB
 exports.submitContact = async (req, res, next) => {

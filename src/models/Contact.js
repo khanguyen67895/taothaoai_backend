@@ -15,6 +15,12 @@ const contactSchema = new mongoose.Schema(
     telegramSent: { type: Boolean, default: false },
     telegramError: { type: String },
     isRead: { type: Boolean, default: false },
+    status: {
+      type: String,
+      enum: ["new", "contacted", "processing", "done"],
+      default: "new",
+    },
+    assignedTo: { type: String, trim: true, default: null },
   },
   { timestamps: true }
 );
