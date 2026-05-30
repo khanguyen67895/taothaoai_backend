@@ -1,38 +1,13 @@
-const axios = require("axios");
 const { validationResult } = require("express-validator");
 const Contact = require("../models/Contact");
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const sendTelegramMessage = async (text) => {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const chatIds = (process.env.TELEGRAM_CHAT_ID || "").split(",").map(id => id.trim()).filter(Boolean);
-
-  if (!botToken || chatIds.length === 0) {
-    throw new Error("Telegram chưa được cấu hình");
-  }
-
-  const results = await Promise.allSettled(
-    chatIds.map(chatId =>
-      axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        chat_id: chatId,
-        text,
-        parse_mode: "HTML",
-      })
-    )
-  );
-
-  const failed = results.filter(r => r.status === "rejected");
-  if (failed.length === chatIds.length) {
-    throw new Error(failed[0].reason?.message || "Gửi Telegram thất bại");
-  }
-};
+const { sendTelegramMessage } = require("../utils/telegram");
 
 const LEARNING_MODE_LABEL = {
   offline: "Offline tại Đà Nẵng",
   online: "Online qua Zoom",
   private: "Kèm riêng 1-1",
   more: "Tư vấn thêm",
+  collab: "Hợp tác cùng phát triển",
 };
 
 // ─── Controllers ─────────────────────────────────────────────────────────────
@@ -126,10 +101,10 @@ exports.submitContact = async (req, res, next) => {
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const { name, phone, email, problem, otherProblem, mode } = req.body;
+    const { name, phone, email, problem, otherProblem, mode, youtubeChannel, facebook } = req.body;
 
     // 1. Lưu vào DB trước
-    const contact = await Contact.create({ name, phone, email, problem, otherProblem, mode });
+    const contact = await Contact.create({ name, phone, email, problem, otherProblem, mode, youtubeChannel, facebook });
 
     // 2. Gửi Telegram (không block response nếu lỗi)
     const problemText =
@@ -141,7 +116,9 @@ exports.submitContact = async (req, res, next) => {
       `📞 <b>Số điện thoại:</b> ${phone}\n` +
       `📧 <b>Email:</b> ${email || "Không cung cấp"}\n` +
       `❓ <b>Vấn đề:</b> ${problemText}\n` +
-      `📚 <b>Hình thức học:</b> ${modeLabel}\n\n` +
+      `📚 <b>Hình thức học:</b> ${modeLabel}\n` +
+      `▶️ <b>Kênh Youtube:</b> ${youtubeChannel || "Không cung cấp"}\n` +
+      `👤 <b>FB Cá Nhân:</b> ${facebook || "Không cung cấp"}\n\n` +
       `🕐 <i>${new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}</i>`;
 
     sendTelegramMessage(message)

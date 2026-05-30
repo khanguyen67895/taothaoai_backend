@@ -32,9 +32,11 @@ const contactRules = [
     .trim()
     .notEmpty()
     .withMessage("Vui lòng chọn hình thức học")
-    .isIn(["offline", "online", "private", "more"])
+    .isIn(["offline", "online", "private", "more", "collab"])
     .withMessage("Hình thức học không hợp lệ"),
   body("otherProblem").optional().trim(),
+  body("youtubeChannel").optional().trim(),
+  body("facebook").optional().trim(),
 ];
 
 router.get("/media", landingController.getMedia);

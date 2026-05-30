@@ -10,8 +10,10 @@ const contactSchema = new mongoose.Schema(
     mode: {
       type: String,
       required: true,
-      enum: ["offline", "online", "private", "more"],
+      enum: ["offline", "online", "private", "more", "collab"],
     },
+    youtubeChannel: { type: String, trim: true },
+    facebook: { type: String, trim: true },
     telegramSent: { type: Boolean, default: false },
     telegramError: { type: String },
     isRead: { type: Boolean, default: false },
