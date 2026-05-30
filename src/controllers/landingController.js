@@ -6,17 +6,26 @@ const Contact = require("../models/Contact");
 
 const sendTelegramMessage = async (text) => {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+  const chatIds = (process.env.TELEGRAM_CHAT_ID || "").split(",").map(id => id.trim()).filter(Boolean);
 
-  if (!botToken || !chatId) {
+  if (!botToken || chatIds.length === 0) {
     throw new Error("Telegram chưa được cấu hình");
   }
 
-  await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-    chat_id: chatId,
-    text,
-    parse_mode: "HTML",
-  });
+  const results = await Promise.allSettled(
+    chatIds.map(chatId =>
+      axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        chat_id: chatId,
+        text,
+        parse_mode: "HTML",
+      })
+    )
+  );
+
+  const failed = results.filter(r => r.status === "rejected");
+  if (failed.length === chatIds.length) {
+    throw new Error(failed[0].reason?.message || "Gửi Telegram thất bại");
+  }
 };
 
 const LEARNING_MODE_LABEL = {
