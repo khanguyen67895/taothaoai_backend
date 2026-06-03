@@ -27,7 +27,7 @@ const contactRules = [
 ];
 
 router.get("/media", landingController.getMedia);
-router.post("/contact", contactLimiter, contactRules, landingController.submitContact);
+router.post("/contact", contactRules, landingController.submitContact);
 router.patch("/contact/:id", protect, requireAdmin, landingController.updateContact);
 router.delete("/contact/:id", protect, requireAdmin, landingController.deleteContact);
 
