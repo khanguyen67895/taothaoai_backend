@@ -1,22 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const { body } = require("express-validator");
-const rateLimit = require("express-rate-limit");
 
 const landingController = require("../controllers/landingController");
 const { protect, requireAdmin } = require("../middleware/auth");
-
-// Rate limit: max 5 contact submissions per IP per 15 minutes
-const contactLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  message: {
-    success: false,
-    message: "Bạn đã gửi quá nhiều lần. Vui lòng thử lại sau 15 phút.",
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
 
 const contactRules = [
   body("name").trim().notEmpty().withMessage("Họ và tên là bắt buộc"),

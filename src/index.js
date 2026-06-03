@@ -4,7 +4,6 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
-const rateLimit = require("express-rate-limit");
 const cron = require("node-cron");
 const os = require("os");
 
@@ -29,17 +28,6 @@ app.use(
   })
 );
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
-
-// Global rate limit: 100 requests per 15 min per IP
-app.use(
-  rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { success: false, message: "Quá nhiều yêu cầu, thử lại sau." },
-  })
-);
 
 // ─── Body Parsing ─────────────────────────────────────────────────────────────
 
