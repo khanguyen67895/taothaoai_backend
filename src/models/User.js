@@ -58,6 +58,31 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+
+    // ─── T1 Phàm Nhân progress ──────────────────────────────────
+    t1: {
+      currentStep:    { type: Number, default: 0 },
+      completedSteps: { type: [Number], default: [] },
+      linhKhi:        { type: Number, default: 0 },
+
+      // Step 1 — Lập Thệ survey
+      lapTheName:    { type: String, trim: true },
+      lapTheSource:  { type: String, trim: true },
+      lapTheYoutube: { type: String, trim: true },
+
+      // Step 4 — Linh Căn quiz
+      linhCanAnswers:   { type: [mongoose.Schema.Types.Mixed], default: undefined },
+      linhCanResultIdx: { type: Number },
+
+      // Step 10 — Thiên Kiếp quiz
+      thienKiepAnswers: { type: [Number], default: undefined },
+      thienKiepNiche:   { type: String, trim: true },
+    },
+
+    // ─── Gamification ───────────────────────────────────────────────────
+    streakDays:     { type: Number, default: 0 },
+    lastActiveDate: { type: Date },
+    reviveCount:    { type: Number, default: 1 },
   },
   { timestamps: true }
 );

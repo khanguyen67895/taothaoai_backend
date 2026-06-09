@@ -12,10 +12,8 @@ const registerRules = [
   body("username")
     .optional()
     .trim()
-    .isLength({ min: 3, max: 30 })
-    .withMessage("Username từ 3-30 ký tự")
-    .matches(/^[a-z0-9_]+$/)
-    .withMessage("Username chỉ chứa chữ thường, số và _"),
+    .isLength({ min: 3, max: 20 })
+    .withMessage("Username từ 3-20 ký tự"),
   body("email").isEmail().normalizeEmail().withMessage("Email không hợp lệ"),
   body("phone")
     .optional()
