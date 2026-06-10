@@ -36,8 +36,10 @@ const loginRules = [
 
 // Local auth
 router.post("/register", registerRules, authController.register);
-router.post("/login", loginRules, authController.login);
-router.get("/me", protect, authController.getMe);
+router.post("/login",    loginRules,    authController.login);
+router.post("/refresh",                 authController.refresh);
+router.post("/logout",                  authController.logout);
+router.get ("/me",       protect,       authController.getMe);
 
 // Google OAuth
 router.get(

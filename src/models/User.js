@@ -59,27 +59,9 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
 
-    // ─── T1 Phàm Nhân progress ──────────────────────────────────
-    t1: {
-      currentStep:    { type: Number, default: 0 },
-      completedSteps: { type: [Number], default: [] },
-      linhKhi:        { type: Number, default: 0 },
-
-      // Step 1 — Lập Thệ survey
-      lapTheName:    { type: String, trim: true },
-      lapTheSource:  { type: String, trim: true },
-      lapTheYoutube: { type: String, trim: true },
-
-      // Step 4 — Linh Căn quiz
-      linhCanAnswers:   { type: [mongoose.Schema.Types.Mixed], default: undefined },
-      linhCanResultIdx: { type: Number },
-
-      // Step 10 — Thiên Kiếp quiz
-      thienKiepAnswers: { type: [Number], default: undefined },
-      thienKiepNiche:   { type: String, trim: true },
-    },
-
     // ─── Gamification ───────────────────────────────────────────────────
+    // Course progress (T1-T10) lives in the CourseProgress collection,
+    // one document per (user, tier). See src/models/CourseProgress.js.
     streakDays:     { type: Number, default: 0 },
     lastActiveDate: { type: Date },
     reviveCount:    { type: Number, default: 1 },
