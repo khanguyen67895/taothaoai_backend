@@ -93,7 +93,7 @@ exports.deleteUser = async (req, res, next) => {
 //   search   — tìm theo tên, sđt hoặc email (1 ô duy nhất)
 //   problem  — lọc theo vấn đề (exact)
 //   mode     — lọc theo hình thức học
-//   status   — lọc theo trạng thái (new|contacted|processing|done)
+//   status   — lọc theo trạng thái (new|converted|processing|lost)
 //   isRead   — lọc đã đọc (true|false)
 //   page, limit
 exports.getContacts = async (req, res, next) => {

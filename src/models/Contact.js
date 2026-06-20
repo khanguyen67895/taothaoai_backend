@@ -19,7 +19,7 @@ const contactSchema = new mongoose.Schema(
     isRead: { type: Boolean, default: false },
     status: {
       type: String,
-      enum: ["new", "contacted", "processing", "done"],
+      enum: ["new", "contacting", "lost", "converted"],
       default: "new",
     },
     assignedTo: { type: String, trim: true, default: null },
