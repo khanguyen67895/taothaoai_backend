@@ -23,8 +23,21 @@ const contactSchema = new mongoose.Schema(
       default: "new",
     },
     assignedTo: { type: String, trim: true, default: null },
+    conversionRate: { type: Number, default: null },
+    situation: { type: String, trim: true },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: (_doc, ret) => {
+        ret.id = ret._id;
+        delete ret._id;
+        delete ret.__v;
+        return ret;
+      },
+    },
+  }
 );
 
 module.exports = mongoose.model("Contact", contactSchema);

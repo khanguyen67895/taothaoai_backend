@@ -17,7 +17,6 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       minlength: [3, "Username tối thiểu 3 ký tự"],
       maxlength: [30, "Username tối đa 30 ký tự"],
-      match: [/^[a-z0-9_]+$/, "Username chỉ chứa chữ thường, số và dấu _"],
     },
     email: {
       type: String,

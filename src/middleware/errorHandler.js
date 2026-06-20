@@ -18,6 +18,12 @@ const errorHandler = (err, _req, res, _next) => {
     statusCode = 400;
   }
 
+  // Mongoose cast error (invalid ObjectId)
+  if (err.name === "CastError") {
+    message = "ID không hợp lệ";
+    statusCode = 400;
+  }
+
   // JWT errors
   if (err.name === "JsonWebTokenError") {
     message = "Token không hợp lệ";

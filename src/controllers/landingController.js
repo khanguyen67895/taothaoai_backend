@@ -51,7 +51,7 @@ exports.getMedia = (_req, res) => {
 // Update trạng thái (status, isRead) và phụ trách (assignedTo) — admin only
 exports.updateContact = async (req, res, next) => {
   try {
-    const allowed = ["status", "isRead", "assignedTo"];
+    const allowed = ["status", "isRead", "assignedTo", "conversionRate", "situation"];
     const updates = {};
     allowed.forEach((key) => {
       if (req.body[key] !== undefined) updates[key] = req.body[key];
