@@ -1,5 +1,6 @@
-const User = require("../models/User");
-const Contact = require("../models/Contact");
+const User       = require("../models/User");
+const Contact    = require("../models/Contact");
+const YSuContact = require("../models/YSuContact");
 
 // GET /api/admin/users
 exports.getUsers = async (req, res, next) => {
@@ -154,6 +155,73 @@ exports.deleteContact = async (req, res, next) => {
       return res.status(404).json({ success: false, message: "Không tìm thấy liên hệ" });
     }
     res.json({ success: true, message: "Đã xoá liên hệ thành công" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── Y SƯ contacts ────────────────────────────────────────────────────────────
+
+// GET /api/admin/ysu-contacts
+// Query: search (zalo/youtube), status, isRead, page, limit
+exports.getYSuContacts = async (req, res, next) => {
+  try {
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const skip  = (page - 1) * limit;
+
+    const filter = {};
+
+    if (req.query.search) {
+      const re = new RegExp(req.query.search.trim(), "i");
+      filter.$or = [{ zalo: re }, { youtubeChannel: re }, { symptoms: re }];
+    }
+    if (req.query.status)            filter.status  = req.query.status;
+    if (req.query.isRead !== undefined) filter.isRead = req.query.isRead === "true";
+
+    const [contacts, total] = await Promise.all([
+      YSuContact.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      YSuContact.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      data: contacts,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// PATCH /api/admin/ysu-contacts/:id
+exports.updateYSuContact = async (req, res, next) => {
+  try {
+    const allowed = ["status", "isRead", "assignedTo", "notes"];
+    const updates = {};
+    allowed.forEach((key) => {
+      if (req.body[key] !== undefined) updates[key] = req.body[key];
+    });
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ success: false, message: "Không có trường nào để cập nhật" });
+    }
+
+    const contact = await YSuContact.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });
+    if (!contact) return res.status(404).json({ success: false, message: "Không tìm thấy liên hệ Y Sư" });
+
+    res.json({ success: true, data: contact });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// DELETE /api/admin/ysu-contacts/:id
+exports.deleteYSuContact = async (req, res, next) => {
+  try {
+    const contact = await YSuContact.findByIdAndDelete(req.params.id);
+    if (!contact) return res.status(404).json({ success: false, message: "Không tìm thấy liên hệ Y Sư" });
+    res.json({ success: true, message: "Đã xoá liên hệ Y Sư" });
   } catch (err) {
     next(err);
   }

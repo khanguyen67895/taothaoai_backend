@@ -16,4 +16,8 @@ router.get("/contacts", adminController.getContacts);
 router.patch("/contacts/:id/read", adminController.markContactRead);
 router.delete("/contacts/:id", adminController.deleteContact);
 
+router.get("/ysu-contacts", adminController.getYSuContacts);
+router.patch("/ysu-contacts/:id", adminController.updateYSuContact);
+router.delete("/ysu-contacts/:id", adminController.deleteYSuContact);
+
 module.exports = router;

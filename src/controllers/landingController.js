@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
-const Contact = require("../models/Contact");
+const Contact    = require("../models/Contact");
+const YSuContact = require("../models/YSuContact");
 const { sendTelegramMessage } = require("../utils/telegram");
 
 const LEARNING_MODE_LABEL = {
@@ -129,6 +130,39 @@ exports.submitContact = async (req, res, next) => {
       success: true,
       message: "Đã gửi thông tin thành công. Chúng tôi sẽ liên hệ sớm!",
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── POST /api/landing/ysu ────────────────────────────────────────────────────
+// Y Sư mini form: symptoms[], zalo, youtubeChannel (optional)
+exports.submitYSuContact = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const { symptoms, zalo, youtubeChannel } = req.body;
+    const contact = await YSuContact.create({ symptoms, zalo, youtubeChannel });
+
+    const symptomText = Array.isArray(symptoms) && symptoms.length
+      ? symptoms.join(", ")
+      : "Không chọn";
+
+    const message =
+      `🩺 <b>KHÁM KÊNH Y SƯ MỚI</b>\n\n` +
+      `💊 <b>Triệu chứng:</b> ${symptomText}\n` +
+      `📱 <b>Số Zalo:</b> ${zalo}\n` +
+      `▶️ <b>Kênh YouTube:</b> ${youtubeChannel || "Không cung cấp"}\n\n` +
+      `🕐 <i>${new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}</i>`;
+
+    sendTelegramMessage(message)
+      .then(() => YSuContact.findByIdAndUpdate(contact._id, { telegramSent: true }))
+      .catch((err) => YSuContact.findByIdAndUpdate(contact._id, { telegramError: err.message }));
+
+    res.status(201).json({ success: true, message: "Đã ghi nhận. Y Sư sẽ liên hệ qua Zalo sớm!" });
   } catch (err) {
     next(err);
   }

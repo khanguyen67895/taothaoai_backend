@@ -7,11 +7,7 @@ const contactSchema = new mongoose.Schema(
     email: { type: String, trim: true, lowercase: true },
     problem: { type: String, required: true, trim: true },
     otherProblem: { type: String, trim: true },
-    mode: {
-      type: String,
-      required: true,
-      enum: ["offline", "online", "private", "more", "collab"],
-    },
+    mode: { type: String, trim: true },
     youtubeChannel: { type: String, trim: true },
     facebook: { type: String, trim: true },
     telegramSent: { type: Boolean, default: false },
