@@ -31,6 +31,12 @@ const courseProgressSchema = new mongoose.Schema(
 
     // T1 quizData: { linhCanAnswers, linhCanResultIdx, thienKiepAnswers, thienKiepNiche }
     quizData: { type: mongoose.Schema.Types.Mixed, default: {} },
+
+    // ── Gamification (server-authoritative, không lưu localStorage) ───────────
+    // Rương hàng ngày: timestamp lần cuối user claim — kiểm tra cooldown phía server
+    chestLastClaimedAt: { type: Date,     default: null },
+    // Step 2 chat done: mảng linhCanIdx đã hoàn thành chat — chống bypass step
+    step2ChatDone:      { type: [Number], default: []   },
   },
   { timestamps: true }
 );

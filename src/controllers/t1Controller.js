@@ -8,6 +8,10 @@ const {
   calcFinalAmount,
   genOrderId,
   BASE_PRICE,
+  getChestStatus,
+  claimChest,
+  getStep2ChatStatus,
+  markStep2ChatDone,
 } = require("../services/courseProgress.service");
 const { sendTelegramMessage } = require("../utils/telegram");
 
@@ -165,6 +169,66 @@ exports.createOrder = async (req, res, next) => {
     }
 
     res.status(201).json({ success: true, orderId: order.orderId, status: order.status });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/t1/chest/status
+// ─────────────────────────────────────────────────────────────────────────────
+exports.getChestStatus = async (req, res, next) => {
+  try {
+    const status = await getChestStatus(req.user.id);
+    res.json({ success: true, ...status });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/t1/chest/claim
+// ─────────────────────────────────────────────────────────────────────────────
+exports.claimChest = async (req, res, next) => {
+  try {
+    const result = await claimChest(req.user.id);
+    if (!result.canClaim) {
+      return res.status(429).json({
+        success: false,
+        message:     "Rương chưa sẵn sàng",
+        code:        "CHEST_COOLDOWN",
+        nextClaimAt: result.nextClaimAt,
+      });
+    }
+    res.json({ success: true, reward: result.reward, claimedAt: result.claimedAt, nextClaimAt: result.nextClaimAt });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/t1/step2-chat/status
+// ─────────────────────────────────────────────────────────────────────────────
+exports.getStep2ChatStatus = async (req, res, next) => {
+  try {
+    const status = await getStep2ChatStatus(req.user.id);
+    res.json({ success: true, ...status });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/t1/step2-chat/done
+// ─────────────────────────────────────────────────────────────────────────────
+exports.markStep2ChatDone = async (req, res, next) => {
+  try {
+    const { linhCanIdx } = req.body;
+    if (!Number.isInteger(linhCanIdx) || linhCanIdx < 0 || linhCanIdx > 9) {
+      return res.status(400).json({ success: false, message: "linhCanIdx phải là số nguyên 0–9" });
+    }
+    const result = await markStep2ChatDone(req.user.id, linhCanIdx);
+    res.json({ success: true, ...result });
   } catch (err) {
     next(err);
   }

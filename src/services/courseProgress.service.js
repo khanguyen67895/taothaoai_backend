@@ -109,6 +109,69 @@ function mapT1Response(cp) {
   };
 }
 
+// ── Daily Chest (server-authoritative cooldown) ───────────────────────────────
+
+const CHEST_CD_MS = 24 * 60 * 60 * 1000;
+
+const CHEST_REWARDS = [
+  { type: "linh_khi", icon: "/icons/ic_energy.png",      label: "Linh Khí",        value: "+150 Linh Khí",      linhKhiAmount: 150 },
+  { type: "linh_khi", icon: "/icons/ic_energy.png",      label: "Linh Khí",        value: "+200 Linh Khí",      linhKhiAmount: 200 },
+  { type: "dan_duoc", icon: "/icons/ic_kimdan.png",      label: "Đan Dược",        value: "×2 Đan Dược",        linhKhiAmount: 0   },
+  { type: "phu_luc",  icon: "/icons/ic_exp_present.png", label: "Phụ Lục Bí Kíp", value: "×1 Phụ Lục Bí Kíp", linhKhiAmount: 0   },
+  { type: "ngoc",     icon: "/icons/ic_treasure.png",    label: "Ngọc Tu Luyện",  value: "×1 Ngọc Tu Luyện",   linhKhiAmount: 0   },
+];
+
+async function getChestStatus(userId) {
+  const cp = await CourseProgress.findOne({ userId, tier: "t1" }, { chestLastClaimedAt: 1 }).lean();
+  const lastClaimed = cp?.chestLastClaimedAt ?? null;
+  const now         = Date.now();
+  const canClaim    = !lastClaimed || now - lastClaimed.getTime() >= CHEST_CD_MS;
+  const nextClaimAt = lastClaimed ? new Date(lastClaimed.getTime() + CHEST_CD_MS) : null;
+  return { canClaim, lastClaimedAt: lastClaimed, nextClaimAt };
+}
+
+async function claimChest(userId) {
+  const cp = await CourseProgress.findOne({ userId, tier: "t1" }, { chestLastClaimedAt: 1 }).lean();
+  const lastClaimed = cp?.chestLastClaimedAt ?? null;
+  const now         = new Date();
+
+  if (lastClaimed && now.getTime() - lastClaimed.getTime() < CHEST_CD_MS) {
+    return { canClaim: false, nextClaimAt: new Date(lastClaimed.getTime() + CHEST_CD_MS) };
+  }
+
+  const reward      = CHEST_REWARDS[Math.floor(Math.random() * CHEST_REWARDS.length)];
+  const nextClaimAt = new Date(now.getTime() + CHEST_CD_MS);
+
+  if (reward.linhKhiAmount > 0) {
+    await CourseProgress.findOneAndUpdate(
+      { userId, tier: "t1" },
+      { $set: { chestLastClaimedAt: now }, $inc: { linhKhi: reward.linhKhiAmount } },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+  } else {
+    await upsertProgress(userId, "t1", { chestLastClaimedAt: now });
+  }
+
+  return { canClaim: true, reward, claimedAt: now, nextClaimAt };
+}
+
+// ── Step 2 Chat Done (chống bypass step) ─────────────────────────────────────
+
+async function getStep2ChatStatus(userId) {
+  const cp = await CourseProgress.findOne({ userId, tier: "t1" }, { step2ChatDone: 1 }).lean();
+  return { doneIdxs: cp?.step2ChatDone ?? [] };
+}
+
+async function markStep2ChatDone(userId, linhCanIdx) {
+  await CourseProgress.findOneAndUpdate(
+    { userId, tier: "t1" },
+    { $addToSet: { step2ChatDone: linhCanIdx } },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+  const cp = await CourseProgress.findOne({ userId, tier: "t1" }, { step2ChatDone: 1 }).lean();
+  return { doneIdxs: cp?.step2ChatDone ?? [] };
+}
+
 module.exports = {
   // progress
   findProgress,
@@ -122,4 +185,10 @@ module.exports = {
   validateCouponCode,
   calcFinalAmount,
   genOrderId,
+  // chest
+  getChestStatus,
+  claimChest,
+  // step 2 chat
+  getStep2ChatStatus,
+  markStep2ChatDone,
 };

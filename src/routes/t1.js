@@ -54,6 +54,18 @@ router.post(
   t1.validateCoupon
 );
 
+// ─── Daily Chest ─────────────────────────────────────────────────────────────
+router.get("/chest/status", t1.getChestStatus);
+router.post("/chest/claim", t1.claimChest);
+
+// ─── Step 2 Chat ─────────────────────────────────────────────────────────────
+router.get("/step2-chat/status", t1.getStep2ChatStatus);
+router.post(
+  "/step2-chat/done",
+  [body("linhCanIdx").isInt({ min: 0, max: 9 }).withMessage("linhCanIdx phải là số nguyên 0–9")],
+  t1.markStep2ChatDone
+);
+
 // ─── Orders ──────────────────────────────────────────────────────────────────
 router.post(
   "/order",
