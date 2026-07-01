@@ -93,6 +93,7 @@ function mapT1Response(cp) {
       linhCanResultIdx: null,
       thienKiepAnswers: [],
       thienKiepNiche: "",
+      deferredPay: false,
     };
   }
   return {
@@ -106,6 +107,7 @@ function mapT1Response(cp) {
     linhCanResultIdx: cp.quizData?.linhCanResultIdx ?? null,
     thienKiepAnswers: cp.quizData?.thienKiepAnswers || [],
     thienKiepNiche:   cp.quizData?.thienKiepNiche   || "",
+    deferredPay:      cp.deferredPay ?? false,
   };
 }
 

@@ -1,5 +1,6 @@
 const User           = require("../models/User");
 const CourseProgress = require("../models/CourseProgress");
+const ChatHistory    = require("../models/ChatHistory");
 
 const T1_EXP_TOTAL = 1200;
 
@@ -85,6 +86,47 @@ exports.getDashboard = async (req, res, next) => {
         thienKiepNiche: t1Progress?.quizData?.thienKiepNiche  || "",
       },
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/user/chat-history
+// ─────────────────────────────────────────────────────────────────────────────
+exports.getChatHistory = async (req, res, next) => {
+  try {
+    const doc = await ChatHistory.findOne({ userId: req.user.id }).lean();
+    res.json({
+      success:      true,
+      messages:     doc?.messages     ?? [],
+      userMsgCount: doc?.userMsgCount ?? 0,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PUT /api/user/chat-history
+// ─────────────────────────────────────────────────────────────────────────────
+exports.saveChatHistory = async (req, res, next) => {
+  try {
+    const { messages, userMsgCount } = req.body;
+    if (!Array.isArray(messages)) {
+      return res.status(400).json({ success: false, message: "messages phải là mảng" });
+    }
+
+    const MAX = ChatHistory.schema.statics.MAX_MESSAGES;
+    const trimmed = messages.slice(-MAX);
+
+    await ChatHistory.findOneAndUpdate(
+      { userId: req.user.id },
+      { $set: { messages: trimmed, userMsgCount: userMsgCount ?? 0 } },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
+    res.json({ success: true });
   } catch (err) {
     next(err);
   }

@@ -34,11 +34,12 @@ exports.getProgress = async (req, res, next) => {
 // ─────────────────────────────────────────────────────────────────────────────
 exports.saveProgress = async (req, res, next) => {
   try {
-    const { currentStep, completedSteps, linhKhi } = req.body;
+    const { currentStep, completedSteps, linhKhi, deferredPay } = req.body;
     const fields = {};
     if (currentStep    !== undefined) fields.currentStep    = currentStep;
     if (completedSteps !== undefined) fields.completedSteps = completedSteps;
     if (linhKhi        !== undefined) fields.linhKhi        = linhKhi;
+    if (deferredPay    !== undefined) fields.deferredPay    = Boolean(deferredPay);
 
     await upsertProgress(req.user.id, TIER, fields);
     res.json({ success: true });

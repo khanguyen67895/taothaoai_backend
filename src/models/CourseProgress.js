@@ -37,6 +37,8 @@ const courseProgressSchema = new mongoose.Schema(
     chestLastClaimedAt: { type: Date,     default: null },
     // Step 2 chat done: mảng linhCanIdx đã hoàn thành chat — chống bypass step
     step2ChatDone:      { type: [Number], default: []   },
+    // Step 8: user đã chọn "Để Sau" khi xem màn hình payment
+    deferredPay:        { type: Boolean,  default: false },
   },
   { timestamps: true }
 );

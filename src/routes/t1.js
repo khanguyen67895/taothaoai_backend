@@ -16,6 +16,7 @@ router.put(
     body("currentStep").optional().isInt({ min: 0, max: 11 }),
     body("completedSteps").optional().isArray(),
     body("linhKhi").optional().isInt({ min: 0 }),
+    body("deferredPay").optional().isBoolean(),
   ],
   t1.saveProgress
 );
