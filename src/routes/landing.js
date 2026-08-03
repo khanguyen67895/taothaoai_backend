@@ -35,9 +35,23 @@ const ysuRules = [
   body("youtubeChannel").optional().trim(),
 ];
 
+const toolLeadRules = [
+  body("name").trim().notEmpty().withMessage("Họ và tên là bắt buộc"),
+  body("phone")
+    .trim()
+    .notEmpty()
+    .withMessage("Số điện thoại là bắt buộc")
+    .matches(/^[0-9+\s\-()]{9,15}$/)
+    .withMessage("Số điện thoại không hợp lệ"),
+  body("email").optional().trim().isEmail().withMessage("Email không hợp lệ"),
+  body("toolId").trim().notEmpty().withMessage("Thiếu toolId"),
+  body("toolName").trim().notEmpty().withMessage("Thiếu tên tool"),
+];
+
 router.get("/media", landingController.getMedia);
 router.post("/contact", contactRules, landingController.submitContact);
 router.post("/ysu", ysuRules, landingController.submitYSuContact);
+router.post("/tool-lead", toolLeadRules, landingController.submitToolLead);
 router.patch("/contact/:id", protect, requireAdmin, landingController.updateContact);
 router.delete("/contact/:id", protect, requireAdmin, landingController.deleteContact);
 

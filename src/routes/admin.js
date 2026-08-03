@@ -20,4 +20,8 @@ router.get("/ysu-contacts", adminController.getYSuContacts);
 router.patch("/ysu-contacts/:id", adminController.updateYSuContact);
 router.delete("/ysu-contacts/:id", adminController.deleteYSuContact);
 
+router.get("/tool-leads", adminController.getToolLeads);
+router.patch("/tool-leads/:id", adminController.updateToolLead);
+router.delete("/tool-leads/:id", adminController.deleteToolLead);
+
 module.exports = router;

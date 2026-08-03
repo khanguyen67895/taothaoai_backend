@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 const Contact    = require("../models/Contact");
 const YSuContact = require("../models/YSuContact");
+const ToolLead   = require("../models/ToolLead");
 const { sendTelegramMessage } = require("../utils/telegram");
 
 const LEARNING_MODE_LABEL = {
@@ -163,6 +164,41 @@ exports.submitYSuContact = async (req, res, next) => {
       .catch((err) => YSuContact.findByIdAndUpdate(contact._id, { telegramError: err.message }));
 
     res.status(201).json({ success: true, message: "Đã ghi nhận. Y Sư sẽ liên hệ qua Zalo sớm!" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── POST /api/landing/tool-lead ──────────────────────────────────────────────
+// Trang "Tải Tool": lead mua tool trả phí — lưu DB + báo Telegram, nhân viên
+// hỗ trợ sẽ liên hệ thủ công để thu tiền rồi gửi link tải cho khách.
+exports.submitToolLead = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const { name, phone, email, toolId, toolName } = req.body;
+
+    const lead = await ToolLead.create({ name, phone, email, toolId, toolName });
+
+    const message =
+      `🛠️ <b>YÊU CẦU MUA TOOL MỚI</b>\n\n` +
+      `🔧 <b>Tool:</b> ${toolName}\n` +
+      `👤 <b>Họ và tên:</b> ${name}\n` +
+      `📞 <b>Số điện thoại:</b> ${phone}\n` +
+      `📧 <b>Email:</b> ${email || "Không cung cấp"}\n\n` +
+      `🕐 <i>${new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}</i>`;
+
+    sendTelegramMessage(message)
+      .then(() => ToolLead.findByIdAndUpdate(lead._id, { telegramSent: true }))
+      .catch((err) => ToolLead.findByIdAndUpdate(lead._id, { telegramError: err.message }));
+
+    res.status(201).json({
+      success: true,
+      message: "Đã ghi nhận. Đội ngũ hỗ trợ sẽ liên hệ hướng dẫn thanh toán và gửi link tải!",
+    });
   } catch (err) {
     next(err);
   }
